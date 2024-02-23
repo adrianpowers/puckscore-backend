@@ -1,9 +1,24 @@
 const mongoose = require('mongoose');
 
 const playerSchema = new mongoose.Schema({
-  name: String,
-  stateRank: Number,
-  worldRank: Number
+  name: {
+    type: String,
+    required: true
+  },
+  callsign: {
+    type: String,
+    required: false
+  },
+  stateRank: {
+    type: Number,
+    default: 0
+  },
+  worldRank: {
+    type: Number,
+    default: 0
+  }
 });
 
-module.exports = mongoose.model('Player', playerSchema);
+const Player = mongoose.model('Player', playerSchema);
+
+module.exports = Player;

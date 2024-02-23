@@ -1,17 +1,30 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const cors = require("cors");
-require("dotenv").config({ path: "./config.env" });
+const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config({ path: './config.env' });
 const port = process.env.PORT || 5000;
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(require("./routes/record"));
-// get driver connection
-const dbo = require("./db/conn");
+
+// Database Connection
+mongoose.connect(process.env.ATLAS_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+// Routes
+const playerRoutes = require('./routes/playerRoutes');
+app.use('/api/players', playerRoutes);
+// app.use("/api/games", gameRoutes);
+// app.use("/api/sets", setRoutes);
+// app.use("/api/matches", matchRoutes);
+
+// Start the server
 app.listen(port, () => {
-  // perform a database connection when server starts
-  dbo.connectToServer(function (err) {
-    if (err) console.error(err);
-   });
   console.log(`Server is running on port: ${port}`);
 });
