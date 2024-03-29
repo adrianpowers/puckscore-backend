@@ -23,25 +23,25 @@ const getPlayerById = async (req, res) => {
 };
 
 const getPlayerByName = async (req, res) => {
-    try {
-      const playerName = req.params.name;
-      // Create a regex pattern to match any player name or callsign containing the provided string
-      const regexPattern = new RegExp(playerName, "i");
-      const player = await Player.find({
-        $or: [
-          { name: { $regex: regexPattern } },
-          { callsign: { $regex: regexPattern } }
-        ]
-      });
-      if (!player) {
-        return res.status(404).json({ message: "Player not found" });
-      }
-      res.status(200).json(player);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+  try {
+    const playerName = req.params.name;
+    // Create a regex pattern to match any player name or callsign containing the provided string
+    const regexPattern = new RegExp(playerName, "i");
+    const player = await Player.find({
+      $or: [
+        { name: { $regex: regexPattern } },
+        { callsign: { $regex: regexPattern } },
+      ],
+    });
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
     }
-  };
+    res.status(200).json(player);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 const createPlayer = async (req, res) => {
   try {
@@ -100,7 +100,61 @@ const updatePlayerCallsign = async (req, res) => {
   }
 };
 
+// this one updates everyone else's
 const updatePlayerStateRank = async (req, res) => {
+  try {
+    const playerId = req.params.id;
+    const newStateRank = req.body.stateRank;
+
+    // Find the player by ID
+    const player = await Player.findById(playerId);
+    const name = player.name;
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    if (player.stateRank === null) {
+      player.stateRank = newStateRank;
+      await player.save();
+
+      await Player.updateMany(
+        {
+          stateRank: { $gte: newStateRank },
+          name: { $ne: name }, // Exclude the active player
+        },
+        { $inc: { stateRank: 1 } }
+      );
+      res.status(200).json(player);
+    } else {
+      // Calculate the change in rank
+      const rankChange = newStateRank - player.stateRank;
+
+      // Update the rank of the player
+      player.stateRank = newStateRank;
+      await player.save();
+
+      // Update the ranks of affected players
+      if (rankChange < 0) {
+        // Update players with a state rank greater than the old state rank and not the active player
+        await Player.updateMany(
+          {
+            stateRank: { $gte: newStateRank, $lt: newStateRank - rankChange },
+            name: { $ne: name }, // Exclude the active player
+          },
+          { $inc: { stateRank: 1 } }
+        );
+      }
+      res.status(200).json(player);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// this one just updates one person's - doesn't update the relevant ranks
+const updateSinglePlayerStateRank = async (req, res) => {
   try {
     const playerId = req.params.id;
     const newStateRank = req.body.stateRank;
