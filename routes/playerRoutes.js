@@ -4,6 +4,7 @@ const playerController = require("../controllers/playerController");
 
 router.get("/", playerController.getAllPlayers);
 router.get("/:name", playerController.getPlayerByName);
+router.get("/id/:id", playerController.getPlayerById);
 router.post("/", playerController.createPlayer);
 router.put("/:id/name", playerController.updatePlayerName);
 router.put("/:id/callsign", playerController.updatePlayerCallsign);

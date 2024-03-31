@@ -22,8 +22,9 @@ const users = [];
 
 // Routes
 const playerRoutes = require('./routes/playerRoutes');
+const matchRoutes = require('./routes/matchRoutes');
 app.use('/api/players', playerRoutes);
-// app.use('/api/matches', matchRoutes);
+app.use('/api/matches', matchRoutes);
 
 // USER ROUTES
 

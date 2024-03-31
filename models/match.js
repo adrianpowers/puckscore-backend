@@ -1,20 +1,26 @@
+const mongoose = require("mongoose");
+
 const gameSchema = new mongoose.Schema({
-  challenger: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, // Player 1's ID
-  challenged: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, // Player 2's ID
-  challengerScore: { type: Number, default: 0 }, // Player 1's score in the game
-  challengedScore: { type: Number, default: 0 }, // Player 2's score in the game
+  challenger: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, 
+  challenged: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, 
+  challengerScore: { type: Number, default: 0 },
+  challengedScore: { type: Number, default: 0 }, 
+  winner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }
 });
 
 const setSchema = new mongoose.Schema({
-  games: [gameSchema], // Array of games in the set
-  winner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, // Winner of the set
+  games: [gameSchema], 
+  winner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, 
 });
 
 const matchSchema = new mongoose.Schema({
   players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }], // Array of players in the match
+  winner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
   date: { type: Date, default: Date.now }, // Date of the match
-  inProgress: true,
+  inProgress: { type: Boolean, default: true },
   sets: [setSchema] // Array of sets in the match
 });
 
 const Match = mongoose.model('Match', matchSchema);
+
+module.exports = Match;

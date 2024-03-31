@@ -32,6 +32,20 @@ const getPlayerByName = async (req, res) => {
   }
 };
 
+const getPlayerById = async (req, res) => {
+  try {
+    const playerId = req.params.id;
+    const player = await Player.findById(playerId);
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+    res.status(200).json(player);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const createPlayer = async (req, res) => {
   try {
     const { name, callsign, stateRank, worldRank } = req.body;
@@ -205,6 +219,7 @@ const deletePlayer = async (req, res) => {
 module.exports = {
   getAllPlayers,
   getPlayerByName,
+  getPlayerById,
   createPlayer,
   updatePlayerName,
   updatePlayerCallsign,
