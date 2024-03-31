@@ -23,10 +23,7 @@ const users = [];
 // Routes
 const playerRoutes = require('./routes/playerRoutes');
 app.use('/api/players', playerRoutes);
-
-// app.use("/api/games", gameRoutes);
-// app.use("/api/sets", setRoutes);
-// app.use("/api/matches", matchRoutes);
+// app.use('/api/matches', matchRoutes);
 
 // USER ROUTES
 

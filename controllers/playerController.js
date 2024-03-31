@@ -10,18 +10,6 @@ const getAllPlayers = async (req, res) => {
   }
 };
 
-const getPlayerById = async (req, res) => {
-  try {
-    const player = await Player.findById(req.params.id);
-    if (!player) {
-      return res.status(404).json({ message: "Player not found" });
-    }
-    res.json(player);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 const getPlayerByName = async (req, res) => {
   try {
     const playerName = req.params.name;
@@ -29,8 +17,9 @@ const getPlayerByName = async (req, res) => {
     const regexPattern = new RegExp(playerName, "i");
     const player = await Player.find({
       $or: [
-        { name: { $regex: regexPattern } },
-        { callsign: { $regex: regexPattern } },
+        { "name.firstName": { $regex: regexPattern } },
+        { "name.lastName" : { $regex: regexPattern } },
+        { "name.callsign": { $regex: regexPattern } },
       ],
     });
     if (!player) {
@@ -215,7 +204,6 @@ const deletePlayer = async (req, res) => {
 
 module.exports = {
   getAllPlayers,
-  getPlayerById,
   getPlayerByName,
   createPlayer,
   updatePlayerName,
