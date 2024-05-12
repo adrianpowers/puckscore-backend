@@ -17,7 +17,6 @@ const getMatchById = async (req, res) => {
     if (!match) {
       return res.status(404).json({ message: "Match not found" });
     }
-    console.log(match);
     res.status(200).json(match);
   } catch (error) {
     console.error(error);
