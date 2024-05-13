@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const gameSchema = new mongoose.Schema({
-  challenger: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
-  challenged: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
-  challengerScore: { type: Number, default: 0 },
-  challengedScore: { type: Number, default: 0 },
+  playerOne: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  playerTwo: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  playerOneScore: { type: Number, default: 0 },
+  playerTwoScore: { type: Number, default: 0 },
   winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
 });
 
