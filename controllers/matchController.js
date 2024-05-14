@@ -60,25 +60,39 @@ const createSet = async (req, res) => {
 
     // Create a new set instance using the Set model
     const newSet = new Set({ games, winner });
-    console.log(newSet);
+
     // Save the new set to the match and update the match
     match.sets.push(newSet);
     await match.save();
 
-    res
-      .status(201)
-      .json({ message: "Set created successfully", set: newSet._id });
+    // Retrieve the populated set object
+    const populatedSet = await Set.findById(newSet._id).populate('games').exec();
+
+    if (!populatedSet) {
+      return res.status(404).json({ message: "Set not found." });
+    }
+
+    // Return the response with the populated set object
+    res.status(201).json({ message: "Set created successfully", set: populatedSet });
   } catch (error) {
     console.error("Error creating set:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
+
+
 const createGame = async (req, res) => {
   try {
     const { matchId, setId } = req.params;
     const { playerOne, playerTwo, playerOneScore, playerTwoScore, winner } =
       req.body;
+    console.log(playerOne, playerTwo, playerOneScore, playerTwoScore);
+
+    // Validate input
+    if (!playerOne || !playerTwo || !playerOneScore || !playerTwoScore) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
 
     const set = await Set.findById(setId);
 
@@ -97,12 +111,14 @@ const createGame = async (req, res) => {
     set.games.push(newGame);
     await set.save();
 
-    res
+    return res
       .status(201)
       .json({ message: "Game created successfully", game: newGame });
   } catch (error) {
     console.error("Error creating game:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ message: "Failed to create game. Please try again later." });
   }
 };
 

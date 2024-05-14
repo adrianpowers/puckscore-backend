@@ -9,7 +9,7 @@ const gameSchema = new mongoose.Schema({
 });
 
 const setSchema = new mongoose.Schema({
-  games: [ { type: mongoose.Schema.Types.ObjectId, ref: "Game" } ],
+  games: [gameSchema],
   winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
 });
 
@@ -19,7 +19,7 @@ const matchSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }, // Date of the match
   inProgress: { type: Boolean, default: true },
   pendingApproval: { type: Boolean, default: true },
-  sets: [ { type: mongoose.Schema.Types.ObjectId, ref: "Set" } ], // Array of sets in the match
+  sets: [setSchema], // Array of sets in the match
 });
 
 const Match = mongoose.model("Match", matchSchema);
