@@ -103,11 +103,6 @@ const createGame = async (req, res) => {
       });
     }
 
-    // Validate gameWinner as a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(gameWinner)) {
-      return res.status(400).json({ message: "Invalid gameWinner ID." });
-    }
-
     const foundMatch = await Match.findOne({ _id: matchId, "sets._id": setId });
 
     if (!foundMatch) {
@@ -125,7 +120,7 @@ const createGame = async (req, res) => {
     const newGame = new Game({
       playerOneScore,
       playerTwoScore,
-      gameWinner: mongoose.Types.ObjectId(gameWinner), // Convert to ObjectId
+      gameWinner
     });
 
     console.log("Game created in Controller:", newGame);
@@ -148,7 +143,6 @@ const createGame = async (req, res) => {
       .json({ message: "Failed to create game. Please try again later." });
   }
 };
-
 
 const getGamesInSet = async (req, res) => {
   try {
