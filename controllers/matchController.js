@@ -66,50 +66,77 @@ const createSet = async (req, res) => {
     await match.save();
 
     // Retrieve the populated set object
-    const populatedSet = await Set.findById(newSet._id).populate('games').exec();
+    const populatedSet = await Set.findById(newSet._id)
+      .populate("games")
+      .exec();
 
     if (!populatedSet) {
       return res.status(404).json({ message: "Set not found." });
     }
 
     // Return the response with the populated set object
-    res.status(201).json({ message: "Set created successfully", set: populatedSet });
+    res
+      .status(201)
+      .json({ message: "Set created successfully", set: populatedSet });
   } catch (error) {
     console.error("Error creating set:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-
-
 const createGame = async (req, res) => {
   try {
     const { matchId, setId } = req.params;
-    const { playerOne, playerTwo, playerOneScore, playerTwoScore, winner } =
-      req.body;
-    console.log(playerOne, playerTwo, playerOneScore, playerTwoScore);
+    const { playerOneScore, playerTwoScore, gameWinner } = req.body;
 
-    // Validate input
-    if (!playerOne || !playerTwo || !playerOneScore || !playerTwoScore) {
-      return res.status(400).json({ message: "Missing required fields." });
+    // Input Validation
+    const missingFields = [];
+    if (!gameWinner) missingFields.push("gameWinner");
+    if (playerOneScore === undefined || playerOneScore === null)
+      missingFields.push("playerOneScore");
+    if (playerTwoScore === undefined || playerTwoScore === null)
+      missingFields.push("playerTwoScore");
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
     }
 
-    const set = await Set.findById(setId);
+    // Validate gameWinner as a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(gameWinner)) {
+      return res.status(400).json({ message: "Invalid gameWinner ID." });
+    }
+
+    const foundMatch = await Match.findOne({ _id: matchId, "sets._id": setId });
+
+    if (!foundMatch) {
+      return res.status(404).json({ message: `Match ${matchId} not found.` });
+    }
+
+    const set = foundMatch.sets.find((set) => set._id.toString() === setId);
 
     if (!set) {
-      return res.status(404).json({ message: "Set not found." });
+      return res
+        .status(404)
+        .json({ message: `Set ${setId} not found in match ${matchId}.` });
     }
 
     const newGame = new Game({
-      playerOne,
-      playerTwo,
       playerOneScore,
       playerTwoScore,
-      winner,
+      gameWinner: mongoose.Types.ObjectId(gameWinner), // Convert to ObjectId
     });
 
-    set.games.push(newGame);
-    await set.save();
+    console.log("Game created in Controller:", newGame);
+
+    const update = {
+      $push: {
+        "sets.$.games": newGame,
+      },
+    };
+
+    await Match.updateOne({ _id: matchId, "sets._id": setId }, update);
 
     return res
       .status(201)
@@ -122,9 +149,35 @@ const createGame = async (req, res) => {
   }
 };
 
+
+const getGamesInSet = async (req, res) => {
+  try {
+    const { matchId, setId } = req.params;
+    const foundMatch = await Match.findOne({ _id: matchId, "sets._id": setId });
+    
+    if (!foundMatch) {
+      return res.status(404).json({ message: "Match not found." });
+    }
+
+    const set = foundMatch.sets.find((set) => set._id.toString() === setId);
+
+    if (!set) {
+      return res.status(404).json({ message: "Set not found." });
+    }
+
+    const games = set.games;
+
+    return res.status(200).json({ games });
+  } catch (error) {
+    console.error("Error fetching games:", error);
+    return res.status(500).json({ message: "Failed to fetch games. Please try again later." });
+  }
+}
+
 module.exports = {
   getAllMatches,
   getMatchById,
+  getGamesInSet,
   createMatch,
   createSet,
   createGame,

@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 
 const gameSchema = new mongoose.Schema({
-  playerOne: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
-  playerTwo: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
   playerOneScore: { type: Number, default: 0 },
   playerTwoScore: { type: Number, default: 0 },
-  winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  gameWinner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
 });
 
 const setSchema = new mongoose.Schema({
   games: [gameSchema],
-  winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  playerOne: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  playerTwo: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  gameWinner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
 });
 
 const matchSchema = new mongoose.Schema({
