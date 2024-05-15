@@ -49,7 +49,7 @@ const createMatch = async (req, res) => {
 const createSet = async (req, res) => {
   try {
     const { matchId } = req.params;
-    const { games, winner } = req.body;
+    const { games, winner = null } = req.body;
 
     // Find the match
     const match = await Match.findById(matchId);
@@ -120,7 +120,7 @@ const createGame = async (req, res) => {
     const newGame = new Game({
       playerOneScore,
       playerTwoScore,
-      gameWinner
+      gameWinner,
     });
 
     const update = {
@@ -146,7 +146,7 @@ const getGamesInSet = async (req, res) => {
   try {
     const { matchId, setId } = req.params;
     const foundMatch = await Match.findOne({ _id: matchId, "sets._id": setId });
-    
+
     if (!foundMatch) {
       return res.status(404).json({ message: "Match not found." });
     }
@@ -162,9 +162,11 @@ const getGamesInSet = async (req, res) => {
     return res.status(200).json({ games });
   } catch (error) {
     console.error("Error fetching games:", error);
-    return res.status(500).json({ message: "Failed to fetch games. Please try again later." });
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch games. Please try again later." });
   }
-}
+};
 
 module.exports = {
   getAllMatches,
