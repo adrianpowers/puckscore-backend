@@ -66,9 +66,9 @@ const createSet = async (req, res) => {
     await match.save();
 
     // Retrieve the populated set object
-    const populatedSet = await Set.findById(newSet._id)
-      .populate("games")
-      .exec();
+    const populatedSet = match.sets.id(newSet._id);
+
+    console.log(populatedSet);
 
     if (!populatedSet) {
       return res.status(404).json({ message: "Set not found." });
@@ -122,8 +122,6 @@ const createGame = async (req, res) => {
       playerTwoScore,
       gameWinner
     });
-
-    console.log("Game created in Controller:", newGame);
 
     const update = {
       $push: {
