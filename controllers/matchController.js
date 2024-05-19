@@ -10,6 +10,21 @@ const getAllMatches = async (req, res) => {
   }
 };
 
+const getAllMatchesByPlayer = async (req, res) => {
+  try {
+    const playerId = req.params.playerId;
+
+    // Find all matches where the specified player has participated
+    const matches = await Match.find({ "players": playerId });
+
+    res.status(200).json(matches);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 const getMatchById = async (req, res) => {
   try {
     const matchId = req.params.matchId;
@@ -67,8 +82,6 @@ const createSet = async (req, res) => {
 
     // Retrieve the populated set object
     const populatedSet = match.sets.id(newSet._id);
-
-    console.log(populatedSet);
 
     if (!populatedSet) {
       return res.status(404).json({ message: "Set not found." });
@@ -171,6 +184,7 @@ const getGamesInSet = async (req, res) => {
 module.exports = {
   getAllMatches,
   getMatchById,
+  getAllMatchesByPlayer,
   getGamesInSet,
   createMatch,
   createSet,
