@@ -3,7 +3,7 @@ const Player = require("../models/player");
 // Controller functions
 const getAllPlayers = async (req, res) => {
   try {
-    const players = await Player.find();
+    const players = await Player.find({ activeStatus: true });
     res.json(players);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -48,14 +48,59 @@ const getPlayerById = async (req, res) => {
 
 const createPlayer = async (req, res) => {
   try {
-    const { name, callsign, stateRank, worldRank } = req.body;
-    const player = new Player({ name, callsign, stateRank, worldRank });
+    const {
+      firstName,
+      lastName,
+      callsign,
+      stateRank,
+      worldRank,
+      location,
+      year,
+      height,
+      wingspan,
+      handPreference,
+      malletPreference,
+      favoriteShot,
+      playerBio
+    } = req.body;
+
+    // Generate a unique token
+    const uniqueToken = await Player.generateUniqueToken(firstName, lastName);
+
+    // Create a new player document
+    const player = new Player({
+      name: {
+        firstName: firstName,
+        callsign: callsign,
+        lastName: lastName,
+      },
+      stateRank,
+      worldRank,
+      uniqueToken,
+      playerInfo: {
+        location,
+        year,
+        height,
+        wingspan,
+        handPreference,
+        malletPreference,
+        favoriteShot,
+        playerBio
+      }
+    });
+
+    // Save the player document
     await player.save();
+
+    // Send the response
     res.status(201).json(player);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
+
+module.exports = createPlayer;
+
 
 const updatePlayerName = async (req, res) => {
   try {
@@ -157,6 +202,7 @@ const updatePlayerStateRank = async (req, res) => {
 };
 
 // this one just updates one person's - doesn't update the relevant ranks
+// will not be horribly useful in prod, this is mostly for testing
 const updateSinglePlayerStateRank = async (req, res) => {
   try {
     const playerId = req.params.id;
@@ -205,14 +251,19 @@ const updatePlayerWorldRank = async (req, res) => {
 
 const deletePlayer = async (req, res) => {
   try {
-    const player = await Player.findById(req.params.id);
+    const playerId = req.params.id;
+
+    const player = await Player.findById(playerId);
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
-    await player.remove();
-    res.json({ message: "Player deleted" });
+
+    player.isActive = false;
+    await player.save();
+
+    res.status(200).json({ message: "Player deactivated" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 

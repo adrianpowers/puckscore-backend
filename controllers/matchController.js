@@ -3,12 +3,25 @@ const Player = require("../models/player");
 
 const getAllMatches = async (req, res) => {
   try {
+    // Fetch all matches
     const matches = await Match.find();
+
+    // Check if matches were found
+    if (!matches || matches.length === 0) {
+      return res.status(404).json({ message: "No matches found" });
+    }
+
+    // Send the response
     res.json(matches);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    // Handle errors
+    console.error("Error fetching matches:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports = getAllMatches;
+
 
 const getAllMatchesByPlayer = async (req, res) => {
   try {
@@ -41,25 +54,41 @@ const getMatchById = async (req, res) => {
 
 const createMatch = async (req, res) => {
   try {
-    const { players } = req.body;
+    const { players, date } = req.body;  // Assume 'players' is an array of player IDs and 'date' is the match date
 
+    // Fetch player details
+    const playerDetails = await Promise.all(players.map(async playerId => {
+      const player = await Player.findById(playerId);
+      if (!player) {
+        throw new Error(`Player with ID ${playerId} not found`);
+      }
+      return {
+        _id: player._id,
+        firstName: player.name.firstName,
+        callsign: player.name.callsign,
+        lastName: player.name.lastName,
+        stateRank: player.stateRank,
+        worldRank: player.worldRank,
+      };
+    }));
+
+    // Create new match document with player details
     const newMatch = new Match({
-      players: players,
+      players: playerDetails,
+      date,
     });
 
     await newMatch.save();
 
-    const populatedMatch = await Match.findById(newMatch._id).populate(
-      "players"
-    );
-
-    res.status(201).json(populatedMatch);
+    // Respond with the created match document
+    res.status(201).json(newMatch);
   } catch (err) {
     // Handle errors
     console.error("Error creating match:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 const createSet = async (req, res) => {
   try {
@@ -180,6 +209,7 @@ const getGamesInSet = async (req, res) => {
       .json({ message: "Failed to fetch games. Please try again later." });
   }
 };
+
 
 module.exports = {
   getAllMatches,

@@ -14,8 +14,16 @@ const setSchema = new mongoose.Schema({
 });
 
 const matchSchema = new mongoose.Schema({
-  players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }], // Array of players in the match
-  winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+  players: [
+    {
+      playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
+      firstName: String,
+      callsign: { type: String, required: false },
+      lastName: String,
+      stateRank: Number,
+      worldRank: Number,
+    },
+  ],  winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
   date: { type: Date, default: Date.now }, // Date of the match
   inProgress: { type: Boolean, default: true },
   pendingApproval: { type: Boolean, default: true },
